@@ -2,8 +2,7 @@
 <html lang="ko">
 <head>
   <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet" />
-   <!-- Open Graph (카카오/메타 미리보기) -->
-  <meta property="og:type" content="website" />
+   <meta property="og:type" content="website" />
   <meta property="og:title" content="봄봄축제 초대장" />
   <meta property="og:description" content="따뜻한 봄날, 기쁨과 나눔이 가득한 특별한 주말을 준비했습니다. 2026.05.31 (주일) 1부 09:30 / 2부 11:30 | 선교제일교회" />
   <meta property="og:image" content="https://1q2w3e4r-kor.github.io/BOMBOM/thumb.png" />
@@ -126,7 +125,7 @@
   }
   #bgm-toggle:active { transform: scale(0.95); }
 
-  /* 초기 음악 재생 안내 오버레이 (선택사항) */
+  /* 초기 음악 재생 안내 오버레이 */
   #play-prompt {
     position: fixed;
     top: 0;
@@ -155,10 +154,8 @@
   
 </head>
 
-  
 <body>
 
-<!-- 초기 재생 프롬프트 (선택사항) -->
 <div id="play-prompt">
   <button id="start-music">🎵 배경음악과 함께 시작하기</button>
 </div>
@@ -172,7 +169,6 @@
     <p class="lead">따뜻한 봄날,<br>기쁨과 나눔이 가득한<br>특별한 주말을 준비했습니다.</p>
   </section>
 
-  <!-- 배경음악 -->
   <audio id="bgm" preload="auto" loop playsinline>
     <source src="https://1q2w3e4r-kor.github.io/BOMBOM/BGM.mp3" type="audio/mpeg">
   </audio>
@@ -182,7 +178,12 @@
   <img src="2.png" alt="플리마켓1" />
   <img src="3.png" alt="플리마켓2" />
   <img src="4.png" alt="예배" />
-  <video width="100%" controls style="display: block; margin: 10px 0;"><source src="5.mp4" type="video/mp4">Your browser does not support the video tag.</video>
+  
+  <video id="main-video" width="100%" controls style="display: block; margin: 10px 0;">
+    <source src="5.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+
   <section class="section2">
     <h2 style="font-size:28px;">강사 소개</h2>
 
@@ -206,7 +207,7 @@
   <section class="section">
     <h2>오시는 길</h2>
     <br>
-    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d1334.2704130078628!2d126.99764259979858!3d37.30822065693434!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x357b5d2088a8b389%3A0xa5fa51f39567a883!2z7ISg6rWQ7KCc7J286rWQ7ZqM!5e0!3m2!1sko!2skr!4v1776862021378!5m2!1sko!2skr" 
+    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3175.0505100000003!2d127.0182!3d37.2831!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzfCsDE2JzU5LjEiTiAxMjfCsDAxJzA1LjUiRQ!5e0!3m2!1sko!2skr!4v1620000000000!5m2!1sko!2skr" 
       width="100%" height="240" style="border:0;" allowfullscreen loading="lazy"></iframe>
 
     <div class="button-group">
@@ -226,85 +227,75 @@ const audio = document.getElementById("bgm");
 const btn = document.getElementById("bgm-toggle");
 const playPrompt = document.getElementById("play-prompt");
 const startBtn = document.getElementById("start-music");
+const video = document.getElementById("main-video");
 
 let isPlaying = false;
 
-// 디버깅용 콘솔 로그
-console.log("스크립트 시작");
-console.log("Audio 요소:", audio);
-console.log("오디오 소스:", audio.src);
-
 // 음악 재생 함수
 function playMusic() {
-  console.log("playMusic() 호출됨");
-  
-  if (!audio) {
-    console.error("오디오 요소를 찾을 수 없습니다");
-    return;
+  if (!audio) return;
+
+  // 1. 배경음악을 재생할 때, 비디오가 나오고 있다면 비디오를 일시정지함
+  if (!video.paused) {
+    video.pause();
   }
 
   audio.volume = 0.7;
-  
   const playPromise = audio.play();
   
   if (playPromise !== undefined) {
     playPromise
       .then(() => {
-        console.log("음악 재생 성공");
         isPlaying = true;
         btn.textContent = "🔊";
       })
       .catch(err => {
-        console.error("음악 재생 실패:", err.message);
+        console.error("재생 실패:", err);
         isPlaying = false;
         btn.textContent = "🔇";
-        alert("음악 재생 실패:\n" + err.message + "\n\n파일 경로를 확인해주세요.");
       });
   }
 }
 
-// 초기 재생 버튼
+// 2. 비디오가 재생(play)될 때 배경음악을 멈추는 이벤트 리스너
+video.addEventListener("play", () => {
+  if (isPlaying) {
+    audio.pause();
+    isPlaying = false;
+    btn.textContent = "🔇";
+  }
+});
+
+// 초기 재생 버튼 이벤트
 if (startBtn) {
   startBtn.addEventListener("click", () => {
-    console.log("시작 버튼 클릭됨");
     playPrompt.classList.add("hidden");
     playMusic();
   });
-} else {
-  console.error("시작 버튼을 찾을 수 없습니다");
 }
 
-// 토글 버튼
+// BGM 토글 버튼 이벤트
 if (btn) {
   btn.addEventListener("click", () => {
-    console.log("토글 버튼 클릭됨, 현재 상태:", isPlaying);
-    
     if (isPlaying) {
       audio.pause();
       btn.textContent = "🔇";
       isPlaying = false;
-      console.log("음악 정지됨");
     } else {
       playMusic();
     }
   });
-} else {
-  console.error("토글 버튼을 찾을 수 없습니다");
 }
 
-// 페이지 로드 완료 후
+// 페이지 로드 시 자동재생 시도 (브라우저 정책상 차단될 수 있음)
 window.addEventListener("load", () => {
-  console.log("페이지 로드 완료");
-  
   audio.play()
     .then(() => {
-      console.log("자동재생 성공");
       playPrompt.classList.add("hidden");
       isPlaying = true;
       btn.textContent = "🔊";
     })
     .catch(() => {
-      console.log("자동재생 실패 (정상) - 프롬프트 표시");
       playPrompt.classList.remove("hidden");
     });
 });
